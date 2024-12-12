@@ -28,7 +28,20 @@
 
 ## 📦 Installation
 
-[Previous steps 1-3 stay the same...]
+1. **Search for a Location**
+   - Enter a location in the search bar
+   - Select from the autocomplete suggestions
+   - View the location on the map
+
+2. **Explore Nearby Places**
+   - Use the category filters to find specific types of places
+   - Click on markers to view more information
+   - Add places to your favorites
+
+3. **Manage Favorites**
+   - Click the heart icon to save a location
+   - Access saved locations in the Favorites tab
+   - Click "View on Map" to quickly navigate to a saved location
 
 4. Set up MongoDB:
 ```env
@@ -56,5 +69,9 @@ yarn dev
    - `locations`: Caches frequently accessed location data
 
 ## 🔑 API Key Setup
+
+
+
+
 
 [Rest of the README stays the same...]
