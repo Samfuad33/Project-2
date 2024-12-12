@@ -236,7 +236,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
           ref={mapRef}
           className="w-2/3 h-[600px] rounded-lg overflow-hidden shadow-lg"
         />
-        <div className="w-1/3 overflow-y-auto h-[600px]">
+        <div className="w-1/3 overflow-y-auto h-[600px] locations-scroll">
           {nearbyPlaces.map((place, index) => (
             <div
               key={index}

@@ -8,6 +8,7 @@ import ShimmerButton from "@/components/ui/shimmer-button";
 import { useSearch } from './useSearch';
 import MapComponent from './map';
 import { Heart } from 'lucide-react';
+import ShineBorder from "@/components/ui/shine-border";
 
 interface FavoritePlace {
   id: string;
@@ -211,20 +212,22 @@ export default function Home() {
 
         {/* Favorite Locations Display */}
         {activeTab === "Favorite Locations" && (
-          <div className="w-full max-w-6xl px-4 animate-fadeIn">
-            {favorites.length === 0 ? (
-              <div className="mt-16 flex flex-col items-center justify-center gap-4">
-                <Heart className="w-16 h-16 text-gray-400" />
-                <p className="text-xl font-medium text-gray-600">No favorite locations yet</p>
-                <p className="text-gray-500">Click the heart icon on any location to add it to your favorites</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {favorites.map((place) => (
-                  <div
-                    key={place.id}
-                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-105 p-6"
-                  >
+        <div className="w-full max-w-6xl px-4 animate-fadeIn">
+          {favorites.length === 0 ? (
+            <div className="mt-16 flex flex-col items-center justify-center gap-4">
+              <Heart className="w-16 h-16 text-gray-400" />
+              <p className="text-xl font-medium text-gray-600">No favorite locations yet</p>
+              <p className="text-gray-500">Click the heart icon on any location to add it to your favorites</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {favorites.map((place) => (
+                <ShineBorder
+                  key={place.id}
+                  className="relative overflow-hidden rounded-lg bg-background"
+                  color={["#8B5CF6", "#3B82F6", "#06B6D4"]}
+                >
+                  <div className="p-6 flex flex-col h-full">
                     <div className="flex justify-between items-start">
                       <h3 className="font-bold text-lg">{place.name}</h3>
                       <button
@@ -245,16 +248,17 @@ export default function Home() {
                     
                     <button
                       onClick={() => handleLocationClick(place.location)}
-                      className="mt-4 w-full bg-blue-500 text-white rounded-md py-2 px-4 hover:bg-blue-600 transition-all hover:scale-105"
+                      className="mt-auto w-full bg-blue-500 text-white rounded-md py-2 px-4 hover:bg-blue-600 transition-all hover:scale-105"
                     >
                       View on Map
                     </button>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                </ShineBorder>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       </div>
     </div>
   );

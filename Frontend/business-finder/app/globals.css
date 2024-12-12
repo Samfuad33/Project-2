@@ -85,3 +85,51 @@ body {
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
 }
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Specific styling for the locations list */
+.locations-scroll {
+  @apply overflow-y-auto;
+}
+
+.locations-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.locations-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.locations-scroll::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 10px;
+}
+
+.locations-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
