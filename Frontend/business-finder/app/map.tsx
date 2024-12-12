@@ -57,8 +57,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
-  const autocompleteRef = useRef<any>(null);
-  const searchBoxRef = useRef<HTMLInputElement>(null);
   const [nearbyPlaces, setNearbyPlaces] = useState<Place[]>([]);
   const [selectedType, setSelectedType] = useState<string>('');
 
@@ -71,7 +69,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     { label: 'Shopping', value: 'shopping_mall' }
   ];
 
-  // Handle center prop changes
   useEffect(() => {
     if (center && mapInstanceRef.current) {
       mapInstanceRef.current.setCenter(center);
@@ -185,24 +182,18 @@ const MapComponent: React.FC<MapComponentProps> = ({
         center: center || { lat: 48.8566, lng: 2.3522 },
         zoom: 13,
       });
-
-      if (searchBoxRef.current) {
-        autocompleteRef.current = new window.google.maps.places.Autocomplete(searchBoxRef.current, {
-          types: ['geocode', 'establishment']
-        });
-
-        autocompleteRef.current.addListener('place_changed', () => {
-          const place = autocompleteRef.current.getPlace();
-          
-          if (place.geometry) {
-            mapInstanceRef.current.setCenter(place.geometry.location);
-            mapInstanceRef.current.setZoom(15);
-            searchNearbyPlaces(place.geometry.location, selectedType);
-          }
-        });
-      }
     }
   };
+
+  useEffect(() => {
+    if (mapInstanceRef.current && searchResults.length > 0) {
+      const location = {
+        lat: searchResults[0].geometry.location.lat,
+        lng: searchResults[0].geometry.location.lng
+      };
+      searchNearbyPlaces(location, selectedType);
+    }
+  }, [searchResults]);
 
   const handleTypeChange = (type: string) => {
     setSelectedType(type);
@@ -214,29 +205,31 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="w-full mb-4">
-        <input
-          ref={searchBoxRef}
-          type="text"
-          placeholder="Search locations..."
-          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          defaultValue={searchQuery}
-        />
-      </div>
-      <div className="flex gap-2 mb-4 overflow-x-auto">
-        {placeTypes.map((type) => (
-          <button
-            key={type.value}
-            onClick={() => handleTypeChange(type.value)}
-            className={`px-4 py-2 rounded-full ${
-              selectedType === type.value
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 hover:bg-gray-300'
-            }`}
-          >
-            {type.label}
-          </button>
-        ))}
+      <div className="w-full flex justify-center mb-4">
+        <div className="flex justify-center gap-2 w-full max-w-5xl">
+          {placeTypes.map((type) => (
+            <button
+              key={type.value}
+              onClick={() => handleTypeChange(type.value)}
+              className={`
+                px-4 
+                py-2 
+                rounded-full 
+                text-sm
+                font-medium
+                transition-all
+                flex-shrink-0
+                ${
+                  selectedType === type.value
+                    ? 'bg-blue-500 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }
+              `}
+            >
+              {type.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="flex gap-4">
         <div
