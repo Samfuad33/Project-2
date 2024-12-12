@@ -69,9 +69,49 @@ yarn dev
    - `locations`: Caches frequently accessed location data
 
 ## 🔑 API Key Setup
+To use MapWise, you'll need a Google Maps API key with the following APIs enabled:
+- Maps JavaScript API
+- Places API
+- Geocoding API
+
+Follow these steps to get your API key:
+1. Go to the [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select an existing one
+3. Enable the required APIs
+4. Create credentials (API key)
+5. Add any necessary API key restrictions
+
+## 💡 Usage
+
+1. **Search for a Location**
+   - Enter a location in the search bar
+   - Select from the autocomplete suggestions
+   - View the location on the map
+
+2. **Explore Nearby Places**
+   - Use the category filters to find specific types of places
+   - Click on markers to view more information
+   - Add places to your favorites
+
+3. **Manage Favorites**
+   - Click the heart icon to save a location
+   - Access saved locations in the Favorites tab
+   - Click "View on Map" to quickly navigate to a saved location
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 
+## 👏 Acknowledgments
 
-
-
-[Rest of the README stays the same...]
+- Google Maps Platform for their comprehensive mapping services
+- The Next.js team for their excellent framework
+- The Tailwind CSS team for their utility-first CSS framework
+- Magic UI for their beautiful shine border effect
