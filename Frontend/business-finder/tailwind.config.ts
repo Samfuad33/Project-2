@@ -58,7 +58,8 @@ export default {
   		},
   		animation: {
   			'shimmer-slide': 'shimmer-slide var(--speed) ease-in-out infinite alternate',
-  			'spin-around': 'spin-around calc(var(--speed) * 2) infinite linear'
+  			'spin-around': 'spin-around calc(var(--speed) * 2) infinite linear',
+  			shine: 'shine var(--duration) infinite linear'
   		},
   		keyframes: {
   			'shimmer-slide': {
@@ -78,6 +79,17 @@ export default {
   				},
   				'100%': {
   					transform: 'translateZ(0) rotate(360deg)'
+  				}
+  			},
+  			shine: {
+  				'0%': {
+  					'background-position': '0% 0%'
+  				},
+  				'50%': {
+  					'background-position': '100% 100%'
+  				},
+  				to: {
+  					'background-position': '0% 0%'
   				}
   			}
   		}

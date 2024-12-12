@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Heart } from 'lucide-react';
 
 interface Place {
   name: string;
@@ -7,6 +8,7 @@ interface Place {
   vicinity: string;
   types: string[];
   photos?: any[];
+  place_id: string;
   geometry: {
     location: {
       lat: number;
@@ -15,10 +17,26 @@ interface Place {
   };
 }
 
+interface FavoritePlace {
+  id: string;
+  name: string;
+  address: string;
+  rating?: number;
+  reviews?: number;
+  location: {
+    lat: number;
+    lng: number;
+  };
+  placeType: string;
+}
+
 interface MapComponentProps {
   searchQuery: string;
   searchResults: any[];
-  onPlaceSelected?: (place: any) => void;
+  onAddFavorite: (place: any) => void;
+  onRemoveFavorite: (id: string) => void;
+  favorites: FavoritePlace[];
+  center?: { lat: number; lng: number } | null;
 }
 
 declare global {
@@ -28,12 +46,17 @@ declare global {
   }
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({ searchQuery, searchResults, onPlaceSelected }) => {
+const MapComponent: React.FC<MapComponentProps> = ({
+  searchQuery,
+  searchResults,
+  onAddFavorite,
+  onRemoveFavorite,
+  favorites,
+  center
+}) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
-  const autocompleteRef = useRef<any>(null);
-  const searchBoxRef = useRef<HTMLInputElement>(null);
   const [nearbyPlaces, setNearbyPlaces] = useState<Place[]>([]);
   const [selectedType, setSelectedType] = useState<string>('');
 
@@ -45,6 +68,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchQuery, searchResults,
     { label: 'Tourist Attractions', value: 'tourist_attraction' },
     { label: 'Shopping', value: 'shopping_mall' }
   ];
+
+  useEffect(() => {
+    if (center && mapInstanceRef.current) {
+      mapInstanceRef.current.setCenter(center);
+      mapInstanceRef.current.setZoom(15);
+    }
+  }, [center]);
 
   useEffect(() => {
     if (!window.google) {
@@ -64,11 +94,15 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchQuery, searchResults,
     };
   }, []);
 
+  const isPlaceFavorited = (placeId: string) => {
+    return favorites.some(place => place.id === placeId);
+  };
+
   const searchNearbyPlaces = (location: any, type: string = '') => {
     const service = new window.google.maps.places.PlacesService(mapInstanceRef.current);
     const request = {
       location: location,
-      radius: 1500, // 1.5km radius
+      radius: 1500,
       type: type || undefined
     };
 
@@ -81,11 +115,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchQuery, searchResults,
   };
 
   const updateMarkers = (places: Place[]) => {
-    // Clear existing markers
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
 
-    // Create bounds object to fit all markers
     const bounds = new window.google.maps.LatLngBounds();
 
     places.forEach((place) => {
@@ -95,59 +127,73 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchQuery, searchResults,
         title: place.name,
       });
 
-      // Create info window for each marker
+      const isFavorite = isPlaceFavorited(place.place_id);
+      
       const infoWindow = new window.google.maps.InfoWindow({
         content: `
-          <div class="p-2">
-            <h3 class="font-bold">${place.name}</h3>
-            ${place.rating ? `<p>Rating: ${place.rating} ⭐ (${place.user_ratings_total} reviews)</p>` : ''}
-            <p>${place.vicinity}</p>
+          <div class="p-4">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-bold text-lg">${place.name}</h3>
+              <button 
+                id="fav-${place.place_id}"
+                class="favorite-btn"
+                style="color: ${isFavorite ? '#ef4444' : '#9ca3af'};"
+              >
+                ♥
+              </button>
+            </div>
+            ${place.rating ? 
+              `<p class="text-sm mb-1">Rating: ${place.rating} ⭐ (${place.user_ratings_total} reviews)</p>` 
+              : ''
+            }
+            <p class="text-sm">${place.vicinity}</p>
           </div>
         `
       });
 
       marker.addListener('click', () => {
         infoWindow.open(mapInstanceRef.current, marker);
+        
+        setTimeout(() => {
+          const favBtn = document.getElementById(`fav-${place.place_id}`);
+          if (favBtn) {
+            favBtn.addEventListener('click', () => {
+              if (isPlaceFavorited(place.place_id)) {
+                onRemoveFavorite(place.place_id);
+              } else {
+                onAddFavorite(place);
+              }
+              infoWindow.close();
+            });
+          }
+        }, 100);
       });
 
       markersRef.current.push(marker);
       bounds.extend(place.geometry.location);
     });
 
-    // Fit map to show all markers
     mapInstanceRef.current.fitBounds(bounds);
   };
 
   const initMap = () => {
     if (mapRef.current && !mapInstanceRef.current) {
       mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
-        center: { lat: 48.8566, lng: 2.3522 }, // Paris coordinates
+        center: center || { lat: 48.8566, lng: 2.3522 },
         zoom: 13,
       });
-
-      if (searchBoxRef.current) {
-        autocompleteRef.current = new window.google.maps.places.Autocomplete(searchBoxRef.current, {
-          types: ['geocode', 'establishment']
-        });
-
-        autocompleteRef.current.addListener('place_changed', () => {
-          const place = autocompleteRef.current.getPlace();
-          
-          if (place.geometry) {
-            mapInstanceRef.current.setCenter(place.geometry.location);
-            mapInstanceRef.current.setZoom(15);
-
-            // Search for nearby places when a location is selected
-            searchNearbyPlaces(place.geometry.location, selectedType);
-
-            if (onPlaceSelected) {
-              onPlaceSelected(place);
-            }
-          }
-        });
-      }
     }
   };
+
+  useEffect(() => {
+    if (mapInstanceRef.current && searchResults.length > 0) {
+      const location = {
+        lat: searchResults[0].geometry.location.lat,
+        lng: searchResults[0].geometry.location.lng
+      };
+      searchNearbyPlaces(location, selectedType);
+    }
+  }, [searchResults]);
 
   const handleTypeChange = (type: string) => {
     setSelectedType(type);
@@ -159,46 +205,64 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchQuery, searchResults,
 
   return (
     <div className="flex flex-col w-full">
-      <div className="w-full mb-4">
-        <input
-          ref={searchBoxRef}
-          type="text"
-          placeholder="Search locations..."
-          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          defaultValue={searchQuery}
-        />
-      </div>
-      <div className="flex gap-2 mb-4 overflow-x-auto">
-        {placeTypes.map((type) => (
-          <button
-            key={type.value}
-            onClick={() => handleTypeChange(type.value)}
-            className={`px-4 py-2 rounded-full ${
-              selectedType === type.value
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 hover:bg-gray-300'
-            }`}
-          >
-            {type.label}
-          </button>
-        ))}
+      <div className="w-full flex justify-center mb-4">
+        <div className="flex justify-center gap-2 w-full max-w-5xl">
+          {placeTypes.map((type) => (
+            <button
+              key={type.value}
+              onClick={() => handleTypeChange(type.value)}
+              className={`
+                px-4 
+                py-2 
+                rounded-full 
+                text-sm
+                font-medium
+                transition-all
+                flex-shrink-0
+                ${
+                  selectedType === type.value
+                    ? 'bg-blue-500 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }
+              `}
+            >
+              {type.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="flex gap-4">
         <div
           ref={mapRef}
           className="w-2/3 h-[600px] rounded-lg overflow-hidden shadow-lg"
         />
-        <div className="w-1/3 overflow-y-auto h-[600px]">
+        <div className="w-1/3 overflow-y-auto h-[600px] locations-scroll">
           {nearbyPlaces.map((place, index) => (
             <div
               key={index}
-              className="p-4 border-b hover:bg-gray-50 cursor-pointer"
-              onClick={() => {
-                mapInstanceRef.current.setCenter(place.geometry.location);
-                mapInstanceRef.current.setZoom(17);
-              }}
+              className="p-4 border-b hover:bg-gray-50"
             >
-              <h3 className="font-bold">{place.name}</h3>
+              <div className="flex justify-between items-start">
+                <h3 className="font-bold">{place.name}</h3>
+                <button
+                  onClick={() => {
+                    if (isPlaceFavorited(place.place_id)) {
+                      onRemoveFavorite(place.place_id);
+                    } else {
+                      onAddFavorite(place);
+                    }
+                  }}
+                  className="transition-colors"
+                >
+                  <Heart 
+                    className={`w-5 h-5 ${
+                      isPlaceFavorited(place.place_id) 
+                        ? 'text-red-500 fill-current' 
+                        : 'text-gray-400'
+                    }`}
+                  />
+                </button>
+              </div>
               {place.rating && (
                 <p className="text-sm text-gray-600">
                   Rating: {place.rating} ⭐ ({place.user_ratings_total} reviews)
