@@ -1,11 +1,5 @@
 # MapWise 🗺️
 
-[Previous introduction stays the same...]
-
-## 🌟 Features
-
-[Previous features section stays the same...]
-
 ## 🛠️ Tech Stack
 
 - **Framework**: Next.js
